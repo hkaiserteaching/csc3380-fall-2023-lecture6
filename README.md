@@ -2,4 +2,4 @@
 
 See here for more information about [Lecture 6][lecture6]
 
-[lecture6]: https://hkaiserteaching.github.io/fall2023/csc3380/course/lecture6.html
+[lecture6]: https://teaching.hkaiser.org/fall2023/csc3380/course/lecture6.html
