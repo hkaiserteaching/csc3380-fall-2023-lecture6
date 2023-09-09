@@ -22,45 +22,8 @@ struct token
     }
 };
 
-class token_stream
+token get()    // read a token from the token_stream
 {
-    // representation: not directly accessible to users:
-    bool full;       // is there a token in the buffer?
-    token buffer;    // here is where we keep a Token put back using
-                     // putback()
-public:
-    // user interface:
-    token get();            // get a token
-    void putback(token);    // put a token back into the token_stream
-
-    // constructor: make a token_stream, the buffer starts empty
-    token_stream()
-      : full(false)
-      , buffer(0)
-    {
-    }
-};
-
-// single global instance of the token_stream
-token_stream ts;
-
-void token_stream::putback(token t)
-{
-    if (full)
-        throw std::runtime_error("putback() into a full buffer");
-    buffer = t;
-    full = true;
-}
-
-token token_stream::get()    // read a token from the token_stream
-{
-    // check if we already have a Token ready
-    if (full)
-    {
-        full = false;
-        return buffer;
-    }
-
     // note that >> skips whitespace (space, newline, tab, etc.)
     char ch;
     std::cin >> ch;
@@ -103,13 +66,13 @@ double expression();
 
 double primary()    // Number or ‘(‘ Expression ‘)’
 {
-    token t = ts.get();
+    token t = get();
     switch (t.kind)
     {
     case '(':    // handle ‘(’expression ‘)’
     {
         double d = expression();
-        t = ts.get();
+        t = get();
         if (t.kind != ')')
             throw std::runtime_error("')' expected");
         return d;
@@ -127,7 +90,7 @@ double term()
     double left = primary();    // get the Primary
     while (true)
     {
-        token t = ts.get();    // get the next Token ...
+        token t = get();    // get the next Token ...
         switch (t.kind)
         {
         case '*':
@@ -142,7 +105,6 @@ double term()
             break;
         }
         default:
-            ts.putback(t);    // <<< put the unused token back
             return left;      // return the value
         }
     }
@@ -155,7 +117,7 @@ double expression()
     double left = term();    // get the Term
     while (true)
     {
-        token t = ts.get();    // get the next token…
+        token t = get();    // get the next token…
         switch (t.kind)        // ... and do the right thing with it
         {
         case '+':
@@ -165,8 +127,7 @@ double expression()
             left -= term();
             break;
         default:
-            ts.putback(t);    // <<< put the unused token back
-            return left;      // return the value of the expression
+           return left;      // return the value of the expression
         }
     }
 }
@@ -174,21 +135,8 @@ double expression()
 int main()
 try
 {
-    double val = 0;
-
-    while (std::cin)
-    {
-        token t = ts.get();
-        if (t.kind == 'q')
-            break;    // ‘q’ for “quit”
-
-        if (t.kind == ';')               // ‘;’ for “print now”
-            std::cout << val << '\n';    // print result
-        else
-            ts.putback(t);
-            
-        val = expression();    // evaluate
-    }
+     while (std::cin)
+        std::cout << "result: " << expression() << '\n';
     return 0;
 }
 catch (std::runtime_error& e)
@@ -201,4 +149,3 @@ catch (...)
     std::cerr << "exception \n";
     return 2;
 }
-
